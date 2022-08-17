@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<metalib name="tcaplus_uecqms" tagsetversion="1" version="1">
+
+    <!--UObject 统计信息-->
+    <struct name="tb_object_create_info" version="1" primarykey="project_name,version,section,sequence" splittablekey="project_name">
+        <entry name="project_name"          type="string"       size="128"          desc="项目名称"/>
+        <entry name="version"               type="string"       size="128"          desc="版本号" />
+        <entry name="section"               type="string"       size="128"          desc="逻辑段" />
+        <entry name="sequence"              type="uint32"                           desc="此版本的序列号" />
+        <entry name="is_summary"            type="uint32"                           desc="是否为汇总消息" />
+        <entry name="report_time"           type="uint64"                           desc="上报时间" />
+        <entry name="total_object_num"      type="uint64"                           desc="对象的总数" />
+        <entry name="total_create_num"      type="uint64"                           desc="对象的总数" />
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <index name="index_project_name"    column="project_name" />
+        <index name="index_pvs"             column="project_name,version,section" />
+        <index name="index_pss"             column="project_name,section,sequence" />
+    </struct>
+
+    <struct name="tb_object_create_info_detail" version="1" primarykey="detail_id" splittablekey="detail_id">
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <entry name="info_len"              type="uint32"                           desc="上报信息id"/>
+        <entry name="info"                  type="char"    count="10480000"     refer="info_len"    desc="对象信息"/>
+    </struct>
+
+    <!--UFunction 统计信息-->
+    <struct name="tb_function_create_info" version="1" primarykey="project_name,version,section,sequence" splittablekey="project_name">
+        <entry name="project_name"          type="string"       size="128"          desc="项目名称"/>
+        <entry name="version"               type="string"       size="128"          desc="版本号" />
+        <entry name="section"               type="string"       size="128"          desc="逻辑段" />
+        <entry name="sequence"              type="uint32"                           desc="此版本的序列号" />
+        <entry name="is_summary"            type="uint32"                           desc="是否为汇总消息" />
+        <entry name="report_time"           type="uint64"                           desc="上报时间" />
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <index name="index_project_name"    column="project_name" />
+        <index name="index_pvs"             column="project_name,version,section" />
+        <index name="index_pss"             column="project_name,section,sequence" />
+    </struct>
+
+    <struct name="tb_function_create_info_detail" version="1" primarykey="detail_id" splittablekey="detail_id">
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <entry name="info_len"              type="uint32"                           desc="上报信息id"/>
+        <entry name="info"                  type="char"    count="10480000"     refer="info_len"    desc="对象信息"/>
+    </struct>
+
+    <!--Insights net 统计信息-->
+    <struct name="tb_inet_transfer_info" version="1" primarykey="project_name,version,section,sequence" splittablekey="project_name">
+        <entry name="project_name"          type="string"       size="128"          desc="项目名称"/>
+        <entry name="version"               type="string"       size="128"          desc="版本号" />
+        <entry name="section"               type="string"       size="128"          desc="逻辑段" />
+        <entry name="sequence"              type="uint32"                           desc="此版本的序列号" />
+        <entry name="is_summary"            type="uint32"                           desc="是否为汇总消息" />
+        <entry name="report_time"           type="uint64"                           desc="上报时间" />
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <index name="index_project_name"    column="project_name" />
+        <index name="index_pvs"             column="project_name,version,section" />
+        <index name="index_pss"             column="project_name,section,sequence" />
+    </struct>
+
+    <struct name="tb_inet_transfer_info_detail" version="1" primarykey="detail_id" splittablekey="detail_id">
+        <entry name="detail_id"             type="uint64"                           desc="详细信息id"/>
+        <entry name="info_len"              type="uint32"                           desc="上报信息id"/>
+        <entry name="info"                  type="char"    count="10480000"     refer="info_len"    desc="对象信息"/>
+    </struct>
+</metalib>

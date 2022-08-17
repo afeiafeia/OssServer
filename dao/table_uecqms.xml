@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<metalib name="tcaplus_uecqms" tagsetversion="1" version="8">
+ 
+ <!--以下的表均使用generic结构-->
+ <!-- 对象存储服务相关的表 -->
+ <!-- 用户信息表 -->
+    <struct name="tb_user" version="1" primarykey="ossUser,accessId" splittablekey="ossUser">
+ 		<entry name="ossUser"              type="string"       size="128"          desc="固定字段"/>
+        <entry name="accessId"             type="string"       size="128"          desc="用户的唯一id"/>
+        <entry name="accessKey"            type="string"       size="128"          desc="用户的密钥"/>
+		<index name="index_oss"            column="ossUser" />                    
+    </struct>
+
+
+
+    <!-- bucket的表 -->
+    <!--此处占用空间大小是指：bucket中的对象可能会被删除，删除时不会删除磁盘上的记录，会在达到某个阈值后进行碎片整理
+		实际占用空间是：所占用总空间中，存放未删除数据的空间，每次删除bucket中的数据时，会对其更新-->
+    <struct name="tb_bucket" version="1" primarykey="projectName,ownerId,name" splittablekey="projectName">
+        <entry name="projectName"        type="string"       size="128"          desc="key"/>
+        <entry name="ownerId"            type="string"       size="128"          desc="所属租户的accessId"/>
+		<entry name="name"               type="string"       size="128"          desc="桶的名称"/>
+        <entry name="bucketId"           type="string"       size="128"          desc="桶的唯一id，由ownerId和name得出，作为元数据的表的主键之一"/>
+        <entry name="uploadTime"         type="uint64"                           desc="上传时刻的时间戳"/>
+        <entry name="objCount"           type="uint64"                           desc="存放的对象数量"/>
+		<entry name="size"               type="uint64"                           desc="占用空间大小(单位为byte)"/>
+		<entry name="validSize"          type="uint64"                           desc="所实际占用空间大小(单位为byte)"/>
+		<entry name="blockPath"          type="string"      size="128"           desc="当前bucket可写入分片数据的文件的路径"/>
+		<entry name="blockRemain"        type="uint64"                           desc="当前可写block的剩余空间大小(单位为byte)"/>
+        <index name="index_pno"          column="projectName,ownerId" /> 
+    </struct>
+    <!--分片简要信息表-->
+    <struct name="tb_object_slice" version="1">
+        <entry name="objectId"           type="string"         size="128"        desc="由bucketId和objectName计算的对象的唯一id,用于分片的主键之一"/>
+        <entry name="sliceId"            type="uint32"                           desc="分片的编号"/>
+        <entry name="nodeId"             type="uint64"                           desc="分片所在节点的id"/>
+        <entry name="type"               type="uint32"                           desc="对象的类型"/>
+		<entry name="blockPath"          type="string"          size="128"       desc="所在路径"/>
+        <entry name="offset"             type="uint64"                           desc="分片在文件中的偏移"/>
+        <entry name="length"             type="uint64"                           desc="分片的大小"/>
+        <entry name="md5"                type="string"          size="1024"      desc="分片数据的MD5摘要"/>
+    </struct>
+    <!--元数据信息表-->
+    <struct name="tb_object_metadata" version="1" primarykey="bucketId,objectId" splittablekey="bucketId">
+        <entry name="bucketId"           type="string"       size="128"          desc="bucket的id"/>
+        <entry name="objectName"         type="string"       size="128"          desc="对象名称"/>
+        <entry name="objectId"           type="string"       size="128"          desc="由bucketId和objectName计算的对象的唯一id,用于分片的主键之一"/>
+        <entry name="contentLength"      type="uint64"                           desc="对象字节数"/>
+        <entry name="contentType"        type="string"       size="128"          desc="对象所属的文件类型"/>
+        <entry name="contentEncode"      type="string"       size="128"          desc="对象的编码方式"/>
+        <entry name="suffix"             type="string"       size="128"          desc="文件后缀"/>
+        <entry name="uploadTime"         type="uint64"                           desc="上传时刻的时间戳"/>
+        <entry name="md5"                type="string"       size="1024"         desc="MD5摘要"/>
+        <entry name="isEncript"          type="uint32"                           desc="对象是否加密"/>
+        <entry name="encriptAlgo"        type="string"       size="128 "         desc="所采用的加密算法"/>
+        <entry name="sliceDataCount"     type="uint32"                           desc="实际数据的切片的数量"/>
+        <entry name="sliceECCodeCount"   type="uint32"                           desc="数据EC码的切片的数量"/>
+        <entry name="expire"             type="uint64"                           desc="过期时间的时间戳"/>
+        <entry name="sliceCount"         type="int"                              desc="分片的总数量"/>
+        <entry name="sliceInfo"          type="tb_object_slice"                  count="10"                 refer = "sliceCount"/>
+        <index name="index_b"            column="bucketId" />  
+    </struct>
+
+    <!--分片简要信息表-->
+    <struct name="tb_slice" version="1" primarykey="objectId,sliceId" splittablekey="objectId">
+        <entry name="objectId"           type="string"          size="128"       desc="object的唯一Id"/>
+        <entry name="sliceId"            type="uint32"                           desc="分片的编号"/>
+        <entry name="nodeId"             type="uint64"                           desc="分片所在节点的id"/>
+        <entry name="type"               type="uint32"                           desc="对象的类型"/>
+		<entry name="blockPath"          type="string"          size="128"       desc="所在路径"/>
+        <entry name="offset"             type="uint64"                           desc="分片在文件中的偏移"/>
+        <entry name="length"             type="uint64"                           desc="分片的大小"/>
+        <entry name="md5"                type="string"       size="1024"         desc="分片数据的MD5摘要"/>
+        <index name="index_obj"          column="objectId" />  
+    </struct>
+
+    <!--系统节点信息表-->
+    <!--引入自增id的原因-->
+    <struct name="tb_node_info" version="1" primarykey="node,id" splittablekey="node">
+        <entry name="node"              type="string"          size="128"       desc="固定字段"/>
+        <entry name="id"                type="uint64"                           desc="自增id"/>
+        <entry name="ip"                type="string"          size="128"       desc="节点的ip地址"/>
+        <entry name="port"              type="uint32"                           desc="节点服务所启用的端口"/>
+        <entry name="root"              type="string"          size="128"       desc="节点的根目录"/>
+        <entry name="blockPath"         type="string"          size="128"       desc="当前可存放数据的block的文件路径"/>
+        <entry name="blockValidSpace"   type="uint64"                           desc="当前block可用空间大小"/>
+        <entry name="blockSize"         type="uint64"                           desc="当前可存放数据的block的大小"/>
+        <entry name="space"             type="uint64"                           desc="总空间大小"/>
+        <entry name="validSpace"        type="uint64"                           desc="可用空间大小"/>
+        <entry name="state"             type="uint8"                            desc="状态(在线1或离线0)"/>
+		<index name="index_n"           column="node" />
+        <index name="index_nid"         column="node,id" />                   
+    </struct>
+
+    <struct name="tb_bucket_in_node" version="1" primarykey="nodeId,bucketId" splittablekey="nodeId">
+        <entry name="nodeId"            type="uint64"                           desc="节点id"/>
+        <entry name="bucketId"          type="string"          size="128"       desc="bucket的id"/>
+        <entry name="blockPath"         type="string"          size="128"       desc="当前可存放数据的block的路径"/>
+        <entry name="blockValidSpace"   type="uint64"                           desc="当前可存放数据的block的剩余空间"/>   
+        <index name="index_n"           column="nodeId" />        
+    </struct>
+
+<!--tcaplus中，bucketId对应的元数据及分片的记录-->
+    <struct name="tb_metadata_need_delete" version="1" primarykey="flag,bucketId" splittablekey="flag">
+        <entry name="flag"             type="string"       size="128"          desc="固定字段"/>
+        <entry name="bucketId"         type="string"       size="128"          desc="桶的唯一id"/>
+        <index name="index_f"          column="flag" />     
+    </struct>
+
+<!--节点nodeId中，需要删除的文件夹bucketId-->
+    <struct name="tb_bucket_need_delete" version="1" primarykey="flag,nodeId,bucketId" splittablekey="flag">
+        <entry name="flag"             type="string"       size="128"          desc="固定字段"/>
+        <entry name="nodeId"           type="uint64"                           desc="所属节点的id"/>
+        <entry name="bucketId"         type="string"       size="128"          desc="桶的唯一id"/>
+        <index name="index_f"          column="flag" />
+    </struct>
+
+    <struct name="tb_object_slice_need_delete" version="1" primarykey="objectId,sliceId" splittablekey="objectId">
+        <entry name="nodeId"             type="uint64"                           desc="分片所在节点的id"/>
+		<entry name="blockPath"          type="string"          size="128"       desc="所在路径"/>
+        <entry name="offset"             type="uint64"                           desc="分片在文件中的偏移"/>
+        <entry name="length"             type="uint64"                           desc="分片的大小"/>
+        <entry name="objectId"           type="string"          size="128"       desc="object的唯一Id"/>
+        <entry name="sliceId"            type="uint32"                           desc="分片的编号"/>
+        <entry name="type"               type="uint32"                           desc="对象的类型"/>
+        <entry name="md5"                type="string"       size="1024"         desc="分片数据的MD5摘要"/>
+        <index name="index_obj"          column="objectId" />  
+    </struct>
+
+</metalib>

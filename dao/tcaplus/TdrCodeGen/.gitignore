@@ -1,0 +1,13 @@
+﻿# Gen file
+*.pyc
+demo/
+
+# IDE
+.vscode/
+
+# exe
+*.out
+
+# test
+foo
+protocol
